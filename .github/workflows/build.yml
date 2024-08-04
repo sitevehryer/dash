@@ -62,8 +62,6 @@ jobs:
         include:
         - build_target: arm-linux
           host: arm-linux-gnueabihf
-#          - x86_64-w64-mingw32
-#          - x86_64-pc-linux-gnu
     container:
       image: ghcr.io/${{ needs.build-image.outputs.repo-name }}/dashcore-ci-runner:${{ needs.build-image.outputs.image-tag }}
       options: --user root
@@ -88,14 +86,6 @@ jobs:
       - name: Build dependencies
         run: make -j$(nproc) -C depends HOST=${{ matrix.host }}
 
-# Super slow, let's skip for now
-#      - name: Upload build artifacts
-#        uses: actions/upload-artifact@v2
-#        with:
-#          name: depends
-#          path: |
-#            depends/${{ matrix.host }}
-#            depends/SDKs
   build:
     name: Build
     needs: [build-image, build-depends]
@@ -105,8 +95,6 @@ jobs:
         include:
           - build_target: arm-linux
             host: arm-linux-gnueabihf
-#          - build_target: win64
-#          - build_target: linux64
             dep_opts: DEBUG=1
     container:
       image: ghcr.io/${{ needs.build-image.outputs.repo-name }}/dashcore-ci-runner:${{ needs.build-image.outputs.image-tag }}
@@ -114,12 +102,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-#      - name: Download build artifacts
-#        uses: actions/download-artifact@v2
-#        with:
-#          name: depends
-#          path: ${{ format('depends/{0}', matrix.host) }}
 
       - name: Restore Cache dependencies
         uses: actions/cache/restore@v4
@@ -134,6 +116,7 @@ jobs:
             ${{ runner.os }}-depends-${{ matrix.host }}-${{ github.sha }}
             ${{ runner.os }}-depends-${{ matrix.host }}
             ${{ runner.os }}-depends
+
       - name: CCache
         uses: actions/cache@v4
         with:
@@ -144,10 +127,6 @@ jobs:
             ${{ runner.os }}-${{ matrix.host }}-${{ github.sha }}
             ${{ runner.os }}-${{ matrix.host }}
             ${{ runner.os }}
-
-#      - name: Build dependencies
-#        run: make -j$(nproc) -C depends HOST=${{ matrix.host }}
-
 
       - name: Build source and run tests
         run: |
